@@ -1,0 +1,146 @@
+Attribute VB_Name = "GenerateReportData"
+' written by Darrin Katz 2014
+Dim objFSO As Object, objFile As Object
+Dim oItem As Outlook.MailItem
+Dim myAttachments As Outlook.Attachments
+Dim Recipients As Outlook.Recipients
+Dim fileName, reportRecipient1, reportRecipient2
+Dim startDate As Date, endDate As Date
+
+Sub GenerateReportData()
+    
+    fileName = "C:\email_audit_raw_data_" & Year(Now) & "-" & Month(Now) & "-" & Day(Now) & "-" & Hour(Now) & "-" & Minute(Now) & ".csv"
+    reportRecipient1 = "someone@somewhere.com"
+    reportRecipient2 = "someone@somewhere.com"
+    startDate = #10/31/2014#
+    endDate = #12/31/2014#
+
+    InitReportFile
+    ' WriteColumnHeaders
+    
+    ProcessFolder Application.GetNamespace("MAPI").GetDefaultFolder(olFolderDeletedItems)
+    ProcessFolder Application.GetNamespace("MAPI").GetDefaultFolder(olFolderInbox)
+    ProcessFolder Application.GetNamespace("MAPI").GetDefaultFolder(olFolderSentMail)
+    
+    CloseReportFile
+    
+    SendReportDataEmail
+    
+    MsgBox "Script Complete!"
+    
+End Sub
+Sub InitReportFile()
+    
+    Const ForWriting = 2
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    Set objFile = objFSO.CreateTextFile(fileName, ForWriting, True)
+    
+End Sub
+Sub ProcessFolder(olkFld As Outlook.Folder)
+    
+    Dim olkItm As Object, olkSubFld As Outlook.Folder
+    
+    For Each olkItm In olkFld.Items
+        DoEvents
+        If olkItm.Class = olMail Then
+            If olkItm.CreationTime > startDate And olkItm.CreationTime < endDate Then
+                WriteToReportFile olkFld, olkItm
+            End If
+        End If
+    Next
+
+    For Each olkSubFld In olkFld.Folders
+        ProcessFolder olkSubFld
+        DoEvents
+    Next
+
+    Set olkItm = Nothing
+    Set olkSubFld = Nothing
+    
+End Sub
+Sub WriteColumnHeaders()
+
+    Dim row
+    
+    row = row & "FolderPath" & vbTab
+    row = row & "Attachments" & vbTab
+    row = row & "BCC" & vbTab
+    row = row & "Body" & vbTab
+    row = row & "CC" & vbTab
+    row = row & "ConversationIndex" & vbTab
+    row = row & "ConversationTopic" & vbTab
+    row = row & "CreationTime" & vbTab
+    row = row & "LastModificationTime" & vbTab
+    row = row & "ReceivedByName" & vbTab
+    row = row & "Recipients" & vbTab
+    row = row & "SenderEmailAddress" & vbTab
+    row = row & "SenderName" & vbTab
+    row = row & "SentOn" & vbTab
+    row = row & "Subject" & vbTab
+    row = row & "To" & vbTab
+    row = row & "UnRead" & vbTab
+    
+    objFile.WriteLine row
+    
+End Sub
+Sub WriteToReportFile(olkFld As Outlook.Folder, olMailItm As Outlook.MailItem)
+    
+    Dim row
+    
+    row = row & olkFld.FolderPath & vbTab
+    
+    For Each Attachment In olMailItm.Attachments
+        row = row & Attachment & ","
+    Next
+    row = row & vbTab
+    
+    row = row & olMailItm.BCC & vbTab
+    row = row & Replace(Replace(olMailItm.Body, vbNewLine, " "), vbTab, " ") & vbTab
+    row = row & olMailItm.CC & vbTab
+    row = row & olMailItm.ConversationIndex & vbTab
+    row = row & olMailItm.ConversationTopic & vbTab
+    row = row & olMailItm.CreationTime & vbTab
+    row = row & olMailItm.LastModificationTime & vbTab
+    row = row & olMailItm.ReceivedByName & vbTab
+    
+    For Each Recipient In olMailItm.Recipients
+        row = row & Recipient & ";"
+    Next
+    row = row & vbTab
+    
+    row = row & olMailItm.SenderEmailAddress & vbTab
+    row = row & olMailItm.SenderName & vbTab
+    row = row & olMailItm.SentOn & vbTab
+    row = row & olMailItm.Subject & vbTab
+    row = row & olMailItm.To & vbTab
+    row = row & olMailItm.UnRead & vbTab
+    
+    objFile.WriteLine row
+    
+End Sub
+Sub CloseReportFile()
+
+    objFile.Close
+    Set objFile = Nothing
+    Set objFSO = Nothing
+    
+End Sub
+Sub SendReportDataEmail()
+
+    Set oItem = Application.CreateItem(olMailItem)
+    
+    Set Recipients = oItem.Recipients
+    Recipients.Add reportRecipient1
+    Recipients.Add reportRecipient2
+    
+    oItem.Subject = "Report Data"
+    
+    Set myAttachments = oItem.Attachments
+    myAttachments.Add fileName, olByValue, 1
+    
+    oItem.Send
+    
+    Set oItem = Nothing
+    
+End Sub
+
