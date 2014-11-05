@@ -1,4 +1,3 @@
-Attribute VB_Name = "GenerateReportData"
 ' written by Darrin Katz 2014
 Dim objFSO As Object, objFile As Object
 Dim oItem As Outlook.MailItem
@@ -8,6 +7,8 @@ Dim fileName, reportRecipient1, reportRecipient2
 Dim startDate As Date, endDate As Date
 
 Sub GenerateReportData()
+
+    MsgBox "Starting script..."
     
     fileName = "C:\email_audit_raw_data_" & Year(Now) & "-" & Month(Now) & "-" & Day(Now) & "-" & Hour(Now) & "-" & Minute(Now) & ".csv"
     reportRecipient1 = "someone@somewhere.com"
@@ -15,27 +16,40 @@ Sub GenerateReportData()
     startDate = #10/31/2014#
     endDate = #12/31/2014#
 
-    InitReportFile
-    ' WriteColumnHeaders
+    ' InitReportFile
+    Const ForWriting = 2
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    Set objFile = objFSO.CreateTextFile(fileName, ForWriting, True)
     
     ProcessFolder Application.GetNamespace("MAPI").GetDefaultFolder(olFolderDeletedItems)
     ProcessFolder Application.GetNamespace("MAPI").GetDefaultFolder(olFolderInbox)
     ProcessFolder Application.GetNamespace("MAPI").GetDefaultFolder(olFolderSentMail)
     
-    CloseReportFile
+    ' CloseReportFile
+    objFile.Close
+    Set objFile = Nothing
+    Set objFSO = Nothing
     
-    SendReportDataEmail
+    ' SendReportDataEmail
+    Set oItem = Application.CreateItem(olMailItem)
     
-    MsgBox "Script Complete!"
+    Set Recipients = oItem.Recipients
+    Recipients.Add reportRecipient1
+    Recipients.Add reportRecipient2
+    
+    oItem.Subject = "Report Data"
+    
+    Set myAttachments = oItem.Attachments
+    myAttachments.Add fileName, olByValue, 1
+    
+    oItem.Send
+    
+    Set oItem = Nothing
+    
+    MsgBox "Script complete!"
     
 End Sub
-Sub InitReportFile()
-    
-    Const ForWriting = 2
-    Set objFSO = CreateObject("Scripting.FileSystemObject")
-    Set objFile = objFSO.CreateTextFile(fileName, ForWriting, True)
-    
-End Sub
+
 Sub ProcessFolder(olkFld As Outlook.Folder)
     
     Dim olkItm As Object, olkSubFld As Outlook.Folder
@@ -58,31 +72,7 @@ Sub ProcessFolder(olkFld As Outlook.Folder)
     Set olkSubFld = Nothing
     
 End Sub
-Sub WriteColumnHeaders()
 
-    Dim row
-    
-    row = row & "FolderPath" & vbTab
-    row = row & "Attachments" & vbTab
-    row = row & "BCC" & vbTab
-    row = row & "Body" & vbTab
-    row = row & "CC" & vbTab
-    row = row & "ConversationIndex" & vbTab
-    row = row & "ConversationTopic" & vbTab
-    row = row & "CreationTime" & vbTab
-    row = row & "LastModificationTime" & vbTab
-    row = row & "ReceivedByName" & vbTab
-    row = row & "Recipients" & vbTab
-    row = row & "SenderEmailAddress" & vbTab
-    row = row & "SenderName" & vbTab
-    row = row & "SentOn" & vbTab
-    row = row & "Subject" & vbTab
-    row = row & "To" & vbTab
-    row = row & "UnRead" & vbTab
-    
-    objFile.WriteLine row
-    
-End Sub
 Sub WriteToReportFile(olkFld As Outlook.Folder, olMailItm As Outlook.MailItem)
     
     Dim row
@@ -118,29 +108,3 @@ Sub WriteToReportFile(olkFld As Outlook.Folder, olMailItm As Outlook.MailItem)
     objFile.WriteLine row
     
 End Sub
-Sub CloseReportFile()
-
-    objFile.Close
-    Set objFile = Nothing
-    Set objFSO = Nothing
-    
-End Sub
-Sub SendReportDataEmail()
-
-    Set oItem = Application.CreateItem(olMailItem)
-    
-    Set Recipients = oItem.Recipients
-    Recipients.Add reportRecipient1
-    Recipients.Add reportRecipient2
-    
-    oItem.Subject = "Report Data"
-    
-    Set myAttachments = oItem.Attachments
-    myAttachments.Add fileName, olByValue, 1
-    
-    oItem.Send
-    
-    Set oItem = Nothing
-    
-End Sub
-
