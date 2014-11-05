@@ -1,5 +1,6 @@
 ' written by Darrin Katz 2014
 Dim objFSO As Object, objFile As Object
+Dim olkFolder As Outlook.Folder
 Dim oItem As Outlook.MailItem
 Dim myAttachments As Outlook.Attachments
 Dim Recipients As Outlook.Recipients
@@ -21,10 +22,10 @@ Sub GenerateReportData()
     Set objFSO = CreateObject("Scripting.FileSystemObject")
     Set objFile = objFSO.CreateTextFile(fileName, ForWriting, True)
     
-    ProcessFolder Application.GetNamespace("MAPI").GetDefaultFolder(olFolderDeletedItems)
-    ProcessFolder Application.GetNamespace("MAPI").GetDefaultFolder(olFolderInbox)
-    ProcessFolder Application.GetNamespace("MAPI").GetDefaultFolder(olFolderSentMail)
-    
+    For Each olkFolder In Application.GetNamespace("MAPI").Folders
+        ProcessFolder olkFolder
+    Next
+
     ' CloseReportFile
     objFile.Close
     Set objFile = Nothing
@@ -54,14 +55,16 @@ Sub ProcessFolder(olkFld As Outlook.Folder)
     
     Dim olkItm As Object, olkSubFld As Outlook.Folder
     
-    For Each olkItm In olkFld.Items
-        DoEvents
-        If olkItm.Class = olMail Then
-            If olkItm.CreationTime > startDate And olkItm.CreationTime < endDate Then
-                WriteToReportFile olkFld, olkItm
+    If olkFld.DefaultItemType = olMailItem Then
+        For Each olkItm In olkFld.Items
+            DoEvents
+            If olkItm.Class = olMail Then
+                If olkItm.CreationTime > startDate And olkItm.CreationTime < endDate Then
+                    WriteToReportFile olkFld, olkItm
+                End If
             End If
-        End If
-    Next
+        Next
+    End If
 
     For Each olkSubFld In olkFld.Folders
         ProcessFolder olkSubFld
@@ -108,3 +111,4 @@ Sub WriteToReportFile(olkFld As Outlook.Folder, olMailItm As Outlook.MailItem)
     objFile.WriteLine row
     
 End Sub
+
