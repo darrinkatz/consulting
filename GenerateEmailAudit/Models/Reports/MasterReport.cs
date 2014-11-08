@@ -38,6 +38,8 @@ namespace GenerateEmailAudit
                 sb.Append("\t");
                 sb.Append(mailItem.ReceivedByName);
                 sb.Append("\t");
+                sb.Append(mailItem.ReceivedTime);
+                sb.Append("\t");
                 sb.Append(string.Join(";", mailItem.Recipients));
                 sb.Append("\t");
                 sb.Append(mailItem.SenderEmailAddress);

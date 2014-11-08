@@ -43,7 +43,8 @@
   <ItemGroup>
     <Compile Include="Abstractions\IReport.cs" />
     <Compile Include="Models\MailItem.cs" />
-    <Compile Include="Models\MailItemEqualityComparer.cs" />
+    <Compile Include="Models\EqualityComparers\MailItemEqualityComparer.cs" />
+    <Compile Include="Models\Reports\DailyTrafficReport.cs" />
     <Compile Include="Models\Reports\MasterReport.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

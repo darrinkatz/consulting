@@ -14,6 +14,7 @@ namespace GenerateEmailAudit
         public DateTime CreationTime { get; set; }
         public DateTime LastModificationTime { get; set; }
         public string ReceivedByName { get; set; }
+        public DateTime ReceivedTime { get; set; }
         public string[] Recipients { get; set; }
         public string SenderEmailAddress { get; set; }
         public string SenderName { get; set; }
@@ -46,13 +47,14 @@ namespace GenerateEmailAudit
                     CreationTime = DateTime.Parse(columns[7]),
                     LastModificationTime = DateTime.Parse(columns[8]),
                     ReceivedByName = columns[9],
-                    Recipients = columns[10].Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries),
-                    SenderEmailAddress = columns[11],
-                    SenderName = columns[12],
-                    SentOn = DateTime.Parse(columns[13]),
-                    Subject = columns[14],
-                    To = columns[15].Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries),
-                    Unread = bool.Parse(columns[16]),
+                    ReceivedTime = DateTime.Parse(columns[10]),
+                    Recipients = columns[11].Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries),
+                    SenderEmailAddress = columns[12],
+                    SenderName = columns[13],
+                    SentOn = DateTime.Parse(columns[14]),
+                    Subject = columns[15],
+                    To = columns[16].Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries),
+                    Unread = bool.Parse(columns[17]),
                 };
             }
             catch (Exception ex)

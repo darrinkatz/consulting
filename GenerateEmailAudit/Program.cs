@@ -14,6 +14,7 @@ namespace GenerateEmailAudit
 
             var mailItems = IngestFilePaths(filePaths);
             GenerateReport(new MasterReport(), mailItems);
+            GenerateReport(new DailyTrafficReport(), mailItems);
 
             Console.WriteLine("Done. Press any key to exit.");
             Console.ReadKey();
@@ -65,12 +66,12 @@ namespace GenerateEmailAudit
             
             try
             {
-                if (!System.IO.Directory.Exists(reportDirectoryPath))
+                if (!Directory.Exists(reportDirectoryPath))
                 {
-                    System.IO.Directory.CreateDirectory(reportDirectoryPath);
+                    Directory.CreateDirectory(reportDirectoryPath);
                 }
 
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter(reportFilePath, false))
+                using (StreamWriter file = new StreamWriter(reportFilePath, false))
                 {
                     var reportData = report.Create(mailItems);
 
