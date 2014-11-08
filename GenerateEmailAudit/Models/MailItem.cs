@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GenerateEmailAudit
 {
     public class MailItem
     {
+        public string CurrentUserAddressEntry { get; set; }
         public string FolderPath { get; set; }
         public string[] Attachments { get; set; }
         public string BCC { get; set; }
@@ -37,24 +40,25 @@ namespace GenerateEmailAudit
 
                 result = new MailItem()
                 {
-                    FolderPath = columns[0],
-                    Attachments = columns[1].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries),
-                    BCC = columns[2],
-                    Body = columns[3],
-                    CC = columns[4],
-                    ConversationIndex = columns[5],
-                    ConversationTopic = columns[6],
-                    CreationTime = DateTime.Parse(columns[7]),
-                    LastModificationTime = DateTime.Parse(columns[8]),
-                    ReceivedByName = columns[9],
-                    ReceivedTime = DateTime.Parse(columns[10]),
-                    Recipients = columns[11].Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries),
-                    SenderEmailAddress = columns[12],
-                    SenderName = columns[13],
-                    SentOn = DateTime.Parse(columns[14]),
-                    Subject = columns[15],
-                    To = columns[16].Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries),
-                    Unread = bool.Parse(columns[17]),
+                    CurrentUserAddressEntry = columns[0],
+                    FolderPath = columns[1],
+                    Attachments = columns[2].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries),
+                    BCC = columns[3],
+                    Body = columns[4],
+                    CC = columns[5],
+                    ConversationIndex = columns[6],
+                    ConversationTopic = columns[7],
+                    CreationTime = DateTime.Parse(columns[8]),
+                    LastModificationTime = DateTime.Parse(columns[9]),
+                    ReceivedByName = columns[10],
+                    ReceivedTime = DateTime.Parse(columns[11]),
+                    Recipients = columns[12].Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries),
+                    SenderEmailAddress = columns[13],
+                    SenderName = columns[14],
+                    SentOn = DateTime.Parse(columns[15]),
+                    Subject = columns[16],
+                    To = columns[17].Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries),
+                    Unread = bool.Parse(columns[18]),
                 };
             }
             catch (Exception ex)
@@ -65,6 +69,20 @@ namespace GenerateEmailAudit
             }
 
             return result;
+        }
+
+        public static List<MailItem> GetAllEmailsSent(List<MailItem> mailItems)
+        {
+            return mailItems.Where(mi =>
+                mi.SenderName.Equals(mi.CurrentUserAddressEntry)
+                ).ToList();
+        }
+
+        public static List<MailItem> GetAllEmailsReceived(List<MailItem> mailItems)
+        {
+            return mailItems.Where(mi =>
+                !mi.ReceivedByName.Equals(mi.CurrentUserAddressEntry)
+                ).ToList();
         }
     }
 }

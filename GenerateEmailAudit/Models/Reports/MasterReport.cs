@@ -18,6 +18,8 @@ namespace GenerateEmailAudit
             {
                 var sb = new StringBuilder();
 
+                sb.Append(mailItem.CurrentUserAddressEntry);
+                sb.Append("\t");
                 sb.Append(mailItem.FolderPath);
                 sb.Append("\t");
                 sb.Append(string.Join(",", mailItem.Attachments));

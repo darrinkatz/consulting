@@ -17,9 +17,6 @@ namespace GenerateEmailAudit
             var result = new List<string>();
             var sb = new StringBuilder();
 
-            var allEmailsSent = GetAllEmailsSent(mailItems);
-            var allEmailsReceived = GetAllEmailsReceived(mailItems);
-            
             sb.Append(string.Format("{0}\t", "Time Period"));
             sb.Append(string.Format("{0}\t", "Average Emails Sent"));
             sb.Append(string.Format("{0}\t", "Average Emails Received"));
@@ -28,6 +25,9 @@ namespace GenerateEmailAudit
 
             result.Add(sb.ToString());
 
+            var allEmailsSent = MailItem.GetAllEmailsSent(mailItems);
+            var allEmailsReceived = MailItem.GetAllEmailsReceived(mailItems);
+            
             var numberOfDays = GetDayCount(mailItems);
             sb.Append(string.Format("{0}\t", "Daily"));
             sb.Append(string.Format("{0}\t", allEmailsSent.Count() / numberOfDays));
@@ -130,44 +130,30 @@ namespace GenerateEmailAudit
             return result.ToArray();
         }
 
-        private static List<MailItem> GetAllEmailsSent(List<MailItem> mailItems)
-        {
-            return mailItems.Where(mi =>
-                mi.FolderPath.ToLower().Contains("sent") && string.IsNullOrEmpty(mi.ReceivedByName)
-                ).ToList();
-        }
-
         private static List<MailItem> GetAllEmailsSent(List<MailItem> mailItems, DayOfWeek dayOfWeek)
         {
-            return GetAllEmailsSent(mailItems.Where(mi =>
+            return MailItem.GetAllEmailsSent(mailItems.Where(mi =>
                 mi.CreationTime.DayOfWeek == dayOfWeek
                 ).ToList());
         }
 
         private static List<MailItem> GetAllEmailsSent(List<MailItem> mailItems, int hourOfDay)
         {
-            return GetAllEmailsSent(mailItems.Where(mi =>
+            return MailItem.GetAllEmailsSent(mailItems.Where(mi =>
                 mi.CreationTime.Hour == hourOfDay
                 ).ToList());
         }
 
-        private static List<MailItem> GetAllEmailsReceived(List<MailItem> mailItems)
-        {
-            return mailItems.Where(mi =>
-                !mi.FolderPath.ToLower().Contains("sent") && !string.IsNullOrEmpty(mi.ReceivedByName)
-                ).ToList();
-        }
-
         private static List<MailItem> GetAllEmailsReceived(List<MailItem> mailItems, DayOfWeek dayOfWeek)
         {
-            return GetAllEmailsReceived(mailItems.Where(mi =>
+            return MailItem.GetAllEmailsReceived(mailItems.Where(mi =>
                 mi.CreationTime.DayOfWeek == dayOfWeek
                 ).ToList());
         }
 
         private static List<MailItem> GetAllEmailsReceived(List<MailItem> mailItems, int hourOfDay)
         {
-            return GetAllEmailsReceived(mailItems.Where(mi =>
+            return MailItem.GetAllEmailsReceived(mailItems.Where(mi =>
                 mi.CreationTime.Hour == hourOfDay
                 ).ToList());
         }

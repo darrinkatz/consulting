@@ -6,12 +6,15 @@ Dim myAttachments As Outlook.Attachments
 Dim Recipients As Outlook.Recipients
 Dim fileName, reportRecipient1, reportRecipient2
 Dim startDate As Date, endDate As Date
+Dim currentUserAddressEntry As String
 
 Sub GenerateReportData()
 
     MsgBox "Starting script..."
     
-    fileName = "C:\email_audit_raw_data_" & Year(Now) & "-" & Month(Now) & "-" & Day(Now) & "-" & Hour(Now) & "-" & Minute(Now) & ".csv"
+    currentUserAddressEntry = Application.GetNamespace("MAPI").Session.CurrentUser.AddressEntry
+    
+    fileName = "C:\" & Replace(currentUserAddressEntry, " ", "_") & "_email_audit_raw_data_" & Year(Now) & "-" & Month(Now) & "-" & Day(Now) & "-" & Hour(Now) & "-" & Minute(Now) & ".csv"
     reportRecipient1 = "someone@somewhere.com"
     reportRecipient2 = "someone@somewhere.com"
     startDate = #10/31/2014#
@@ -80,6 +83,7 @@ Sub WriteToReportFile(olkFld As Outlook.Folder, olMailItm As Outlook.MailItem)
     
     Dim row
     
+    row = currentUserAddressEntry & vbTab
     row = row & olkFld.FolderPath & vbTab
     
     For Each Attachment In olMailItm.Attachments
