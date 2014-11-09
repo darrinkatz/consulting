@@ -102,7 +102,7 @@ Sub WriteToReportFile(olkFld As Outlook.Folder, olMailItm As Outlook.MailItem)
     row = row & olMailItm.ReceivedTime & vbTab
     
     For Each Recipient In olMailItm.Recipients
-        row = row & Recipient & ";"
+        row = row & Recipient.Name & "|" & Recipient.Address & ";"
     Next
     row = row & vbTab
     

@@ -15,6 +15,8 @@ namespace GenerateEmailAudit
             var mailItems = IngestFilePaths(filePaths);
             GenerateReport(new MasterReport(), mailItems);
             GenerateReport(new DailyTrafficReport(), mailItems);
+            GenerateReport(new SendersReport(), mailItems);
+            GenerateReport(new RecipientsReport(), mailItems);
 
             Console.WriteLine("Done. Press any key to exit.");
             Console.ReadKey();

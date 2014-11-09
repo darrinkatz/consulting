@@ -23,10 +23,10 @@ namespace GenerateEmailAudit
             result.Add(sb.ToString());
             sb.Clear();
 
-            result.Add(sb.ToString());
+            result.Add(string.Empty);
 
-            var allEmailsSent = MailItem.GetAllEmailsSent(mailItems);
-            var allEmailsReceived = MailItem.GetAllEmailsReceived(mailItems);
+            var allEmailsSent = MailItemHelper.GetAllEmailsSent(mailItems);
+            var allEmailsReceived = MailItemHelper.GetAllEmailsReceived(mailItems);
             
             var numberOfDays = GetDayCount(mailItems);
             sb.Append(string.Format("{0}\t", "Daily"));
@@ -42,7 +42,7 @@ namespace GenerateEmailAudit
             result.Add(sb.ToString());
             sb.Clear();
 
-            result.Add(sb.ToString());
+            result.Add(string.Empty);
 
             var dayOfWeek = DayOfWeek.Monday;
             var allEmailsSentOnWeekday = GetAllEmailsSent(mailItems, dayOfWeek);
@@ -114,7 +114,7 @@ namespace GenerateEmailAudit
             result.Add(sb.ToString());
             sb.Clear();
 
-            result.Add(sb.ToString());
+            result.Add(string.Empty);
 
             for (int hourOfDay = 0; hourOfDay < 24; hourOfDay++)
             {
@@ -132,28 +132,28 @@ namespace GenerateEmailAudit
 
         private static List<MailItem> GetAllEmailsSent(List<MailItem> mailItems, DayOfWeek dayOfWeek)
         {
-            return MailItem.GetAllEmailsSent(mailItems.Where(mi =>
+            return MailItemHelper.GetAllEmailsSent(mailItems.Where(mi =>
                 mi.CreationTime.DayOfWeek == dayOfWeek
                 ).ToList());
         }
 
         private static List<MailItem> GetAllEmailsSent(List<MailItem> mailItems, int hourOfDay)
         {
-            return MailItem.GetAllEmailsSent(mailItems.Where(mi =>
+            return MailItemHelper.GetAllEmailsSent(mailItems.Where(mi =>
                 mi.CreationTime.Hour == hourOfDay
                 ).ToList());
         }
 
         private static List<MailItem> GetAllEmailsReceived(List<MailItem> mailItems, DayOfWeek dayOfWeek)
         {
-            return MailItem.GetAllEmailsReceived(mailItems.Where(mi =>
+            return MailItemHelper.GetAllEmailsReceived(mailItems.Where(mi =>
                 mi.CreationTime.DayOfWeek == dayOfWeek
                 ).ToList());
         }
 
         private static List<MailItem> GetAllEmailsReceived(List<MailItem> mailItems, int hourOfDay)
         {
-            return MailItem.GetAllEmailsReceived(mailItems.Where(mi =>
+            return MailItemHelper.GetAllEmailsReceived(mailItems.Where(mi =>
                 mi.CreationTime.Hour == hourOfDay
                 ).ToList());
         }
