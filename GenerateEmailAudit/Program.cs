@@ -17,6 +17,9 @@ namespace GenerateEmailAudit
             GenerateReport(new DailyTrafficReport(), mailItems);
             GenerateReport(new SendersReport(), mailItems);
             GenerateReport(new RecipientsReport(), mailItems);
+            GenerateReport(new ConversationsReport(), mailItems);
+            GenerateReport(new ReplyStatsReport(), mailItems);
+            GenerateReport(new WordStatsReport(), mailItems);
 
             Console.WriteLine("Done. Press any key to exit.");
             Console.ReadKey();

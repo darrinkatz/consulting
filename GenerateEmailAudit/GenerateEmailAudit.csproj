@@ -43,12 +43,16 @@
   <ItemGroup>
     <Compile Include="Abstractions\IReport.cs" />
     <Compile Include="Helpers\MailItemHelper.cs" />
+    <Compile Include="Models\Conversation.cs" />
     <Compile Include="Models\MailItem.cs" />
-    <Compile Include="Models\EqualityComparers\MailItemEqualityComparer.cs" />
-    <Compile Include="Models\Reports\RecipientsReport.cs" />
-    <Compile Include="Models\Reports\DailyTrafficReport.cs" />
-    <Compile Include="Models\Reports\MasterReport.cs" />
-    <Compile Include="Models\Reports\SendersReport.cs" />
+    <Compile Include="Models\MailItemEqualityComparer.cs" />
+    <Compile Include="Reports\ConversationsReport.cs" />
+    <Compile Include="Reports\WordStatsReport.cs" />
+    <Compile Include="Reports\ReplyStatsReport.cs" />
+    <Compile Include="Reports\RecipientsReport.cs" />
+    <Compile Include="Reports\DailyTrafficReport.cs" />
+    <Compile Include="Reports\MasterReport.cs" />
+    <Compile Include="Reports\SendersReport.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
