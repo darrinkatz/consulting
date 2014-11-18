@@ -49,7 +49,7 @@ namespace GenerateEmailAudit
             sb.Clear();
 
             sb.Append(string.Format("{0}\t", "Reply Stats Report"));
-            sb.Append(string.Format("{0}\t", "This report only considers the first reponse to emails that have been replied to."));
+            sb.Append(string.Format("{0}\t", "This report only considers the first response to emails that have been replied to."));
             result.Add(sb.ToString());
             sb.Clear();
 
