@@ -47,6 +47,8 @@
     <Compile Include="Models\MailItem.cs" />
     <Compile Include="Models\MailItemEqualityComparer.cs" />
     <Compile Include="Reports\ConversationsReport.cs" />
+    <Compile Include="Reports\AttachmentsReport.cs" />
+    <Compile Include="Reports\BehaviourReport.cs" />
     <Compile Include="Reports\WordStatsReport.cs" />
     <Compile Include="Reports\ReplyStatsReport.cs" />
     <Compile Include="Reports\RecipientsReport.cs" />

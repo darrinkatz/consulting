@@ -13,6 +13,7 @@ namespace GenerateEmailAudit
             string[] filePaths = Directory.GetFiles(currentDirectory);
 
             var mailItems = IngestFilePaths(filePaths);
+
             GenerateReport(new MasterReport(), mailItems);
             GenerateReport(new DailyTrafficReport(), mailItems);
             GenerateReport(new SendersReport(), mailItems);
@@ -20,6 +21,8 @@ namespace GenerateEmailAudit
             GenerateReport(new ConversationsReport(), mailItems);
             GenerateReport(new ReplyStatsReport(), mailItems);
             GenerateReport(new WordStatsReport(), mailItems);
+            GenerateReport(new AttachmentsReport(), mailItems);
+            GenerateReport(new BehaviourReport(), mailItems);
 
             Console.WriteLine("Done. Press any key to exit.");
             Console.ReadKey();

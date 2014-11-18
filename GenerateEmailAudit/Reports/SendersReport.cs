@@ -70,7 +70,6 @@ namespace GenerateEmailAudit
             return result;
         }
 
-
         private string GenerateSenderReportLine(string name, string email, List<MailItem> mailItems)
         {
             var sb = new StringBuilder();
