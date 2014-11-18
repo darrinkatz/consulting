@@ -23,6 +23,7 @@ namespace GenerateEmailAudit
             GenerateReport(new WordStatsReport(), mailItems);
             GenerateReport(new AttachmentsReport(), mailItems);
             GenerateReport(new BehaviourReport(), mailItems);
+            GenerateReport(new ReportDocumentation(), mailItems);
 
             Console.WriteLine("Done. Press any key to exit.");
             Console.ReadKey();

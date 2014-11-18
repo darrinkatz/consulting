@@ -44,75 +44,13 @@ namespace GenerateEmailAudit
 
             result.Add(string.Empty);
 
-            var dayOfWeek = DayOfWeek.Monday;
-            var allEmailsSentOnWeekday = GetAllEmailsSent(mailItems, dayOfWeek);
-            var allEmailsReceivedOnWeekday = GetAllEmailsReceived(mailItems, dayOfWeek);
-            var numberOfWeekdays = GetDayOfWeekCount(mailItems, dayOfWeek);
-            sb.Append(string.Format("{0}s\t", dayOfWeek.ToString()));
-            sb.Append(string.Format("{0}\t", allEmailsSentOnWeekday.Count() / numberOfWeekdays));
-            sb.Append(string.Format("{0}\t", allEmailsReceivedOnWeekday.Count() / numberOfWeekdays));
-            result.Add(sb.ToString());
-            sb.Clear();
-
-            dayOfWeek = DayOfWeek.Tuesday;
-            allEmailsSentOnWeekday = GetAllEmailsSent(mailItems, dayOfWeek);
-            allEmailsReceivedOnWeekday = GetAllEmailsReceived(mailItems, dayOfWeek);
-            numberOfWeekdays = GetDayOfWeekCount(mailItems, dayOfWeek);
-            sb.Append(string.Format("{0}s\t", dayOfWeek.ToString()));
-            sb.Append(string.Format("{0}\t", allEmailsSentOnWeekday.Count() / numberOfWeekdays));
-            sb.Append(string.Format("{0}\t", allEmailsReceivedOnWeekday.Count() / numberOfWeekdays));
-            result.Add(sb.ToString());
-            sb.Clear();
-
-            dayOfWeek = DayOfWeek.Wednesday;
-            allEmailsSentOnWeekday = GetAllEmailsSent(mailItems, dayOfWeek);
-            allEmailsReceivedOnWeekday = GetAllEmailsReceived(mailItems, dayOfWeek);
-            numberOfWeekdays = GetDayOfWeekCount(mailItems, dayOfWeek);
-            sb.Append(string.Format("{0}s\t", dayOfWeek.ToString()));
-            sb.Append(string.Format("{0}\t", allEmailsSentOnWeekday.Count() / numberOfWeekdays));
-            sb.Append(string.Format("{0}\t", allEmailsReceivedOnWeekday.Count() / numberOfWeekdays));
-            result.Add(sb.ToString());
-            sb.Clear();
-
-            dayOfWeek = DayOfWeek.Thursday;
-            allEmailsSentOnWeekday = GetAllEmailsSent(mailItems, dayOfWeek);
-            allEmailsReceivedOnWeekday = GetAllEmailsReceived(mailItems, dayOfWeek);
-            numberOfWeekdays = GetDayOfWeekCount(mailItems, dayOfWeek);
-            sb.Append(string.Format("{0}s\t", dayOfWeek.ToString()));
-            sb.Append(string.Format("{0}\t", allEmailsSentOnWeekday.Count() / numberOfWeekdays));
-            sb.Append(string.Format("{0}\t", allEmailsReceivedOnWeekday.Count() / numberOfWeekdays));
-            result.Add(sb.ToString());
-            sb.Clear();
-
-            dayOfWeek = DayOfWeek.Friday;
-            allEmailsSentOnWeekday = GetAllEmailsSent(mailItems, dayOfWeek);
-            allEmailsReceivedOnWeekday = GetAllEmailsReceived(mailItems, dayOfWeek);
-            numberOfWeekdays = GetDayOfWeekCount(mailItems, dayOfWeek);
-            sb.Append(string.Format("{0}s\t", dayOfWeek.ToString()));
-            sb.Append(string.Format("{0}\t", allEmailsSentOnWeekday.Count() / numberOfWeekdays));
-            sb.Append(string.Format("{0}\t", allEmailsReceivedOnWeekday.Count() / numberOfWeekdays));
-            result.Add(sb.ToString());
-            sb.Clear();
-
-            dayOfWeek = DayOfWeek.Saturday;
-            allEmailsSentOnWeekday = GetAllEmailsSent(mailItems, dayOfWeek);
-            allEmailsReceivedOnWeekday = GetAllEmailsReceived(mailItems, dayOfWeek);
-            numberOfWeekdays = GetDayOfWeekCount(mailItems, dayOfWeek);
-            sb.Append(string.Format("{0}s\t", dayOfWeek.ToString()));
-            sb.Append(string.Format("{0}\t", allEmailsSentOnWeekday.Count() / numberOfWeekdays));
-            sb.Append(string.Format("{0}\t", allEmailsReceivedOnWeekday.Count() / numberOfWeekdays));
-            result.Add(sb.ToString());
-            sb.Clear();
-
-            dayOfWeek = DayOfWeek.Sunday;
-            allEmailsSentOnWeekday = GetAllEmailsSent(mailItems, dayOfWeek);
-            allEmailsReceivedOnWeekday = GetAllEmailsReceived(mailItems, dayOfWeek);
-            numberOfWeekdays = GetDayOfWeekCount(mailItems, dayOfWeek);
-            sb.Append(string.Format("{0}s\t", dayOfWeek.ToString()));
-            sb.Append(string.Format("{0}\t", allEmailsSentOnWeekday.Count() / numberOfWeekdays));
-            sb.Append(string.Format("{0}\t", allEmailsReceivedOnWeekday.Count() / numberOfWeekdays));
-            result.Add(sb.ToString());
-            sb.Clear();
+            GenerateDailyTrafficReportLine(mailItems, result, sb, DayOfWeek.Monday);
+            GenerateDailyTrafficReportLine(mailItems, result, sb, DayOfWeek.Tuesday);
+            GenerateDailyTrafficReportLine(mailItems, result, sb, DayOfWeek.Wednesday);
+            GenerateDailyTrafficReportLine(mailItems, result, sb, DayOfWeek.Thursday);
+            GenerateDailyTrafficReportLine(mailItems, result, sb, DayOfWeek.Friday);
+            GenerateDailyTrafficReportLine(mailItems, result, sb, DayOfWeek.Saturday);
+            GenerateDailyTrafficReportLine(mailItems, result, sb, DayOfWeek.Sunday);
 
             result.Add(string.Empty);
 
@@ -128,6 +66,18 @@ namespace GenerateEmailAudit
             }
 
             return result.ToArray();
+        }
+
+        private static void GenerateDailyTrafficReportLine(List<MailItem> mailItems, List<string> result, StringBuilder sb, DayOfWeek dayOfWeek)
+        {
+            var allEmailsSentOnWeekday = GetAllEmailsSent(mailItems, dayOfWeek);
+            var allEmailsReceivedOnWeekday = GetAllEmailsReceived(mailItems, dayOfWeek);
+            var numberOfWeekdays = GetDayOfWeekCount(mailItems, dayOfWeek);
+            sb.Append(string.Format("{0}s\t", dayOfWeek.ToString()));
+            sb.Append(string.Format("{0}\t", numberOfWeekdays > 0 ? allEmailsSentOnWeekday.Count() / numberOfWeekdays : 0));
+            sb.Append(string.Format("{0}\t", numberOfWeekdays > 0 ? allEmailsReceivedOnWeekday.Count() / numberOfWeekdays : 0));
+            result.Add(sb.ToString());
+            sb.Clear();
         }
 
         private static List<MailItem> GetAllEmailsSent(List<MailItem> mailItems, DayOfWeek dayOfWeek)

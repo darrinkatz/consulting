@@ -30,34 +30,13 @@ namespace GenerateEmailAudit
             result.Add(string.Empty);
 
             var allEmailsSent = MailItemHelper.GetAllEmailsSent(mailItems);
-            sb.Append(string.Format("{0}\t", "All Recipients"));
-            sb.Append(string.Format("{0}\t", "(anyone)"));
-            sb.Append(string.Format("{0}\t", allEmailsSent.Count));
-            sb.Append(string.Format("{0}\t", allEmailsSent.Where(mi => mi.To.Length > 0).Count()));
-            sb.Append(string.Format("{0}\t", allEmailsSent.Where(mi => mi.CC.Length > 0).Count()));
-            sb.Append(string.Format("{0}\t", allEmailsSent.Where(mi => mi.BCC.Length > 0).Count()));
-            result.Add(sb.ToString());
-            sb.Clear();
+            result.Add(GenerateRecipientsReportLine("All Recipients", "(anyone)", allEmailsSent));
 
             var allInternalEmailsSent = allEmailsSent.Where(mi => mi.Recipients.Any(r => r.Item2.Contains("@bmo.com"))).ToList();
-            sb.Append(string.Format("{0}\t", "Internal Recipients"));
-            sb.Append(string.Format("{0}\t", "(anyone @bmo.com)"));
-            sb.Append(string.Format("{0}\t", allInternalEmailsSent.Count));
-            sb.Append(string.Format("{0}\t", allInternalEmailsSent.Where(mi => mi.To.Length > 0).Count()));
-            sb.Append(string.Format("{0}\t", allInternalEmailsSent.Where(mi => mi.CC.Length > 0).Count()));
-            sb.Append(string.Format("{0}\t", allInternalEmailsSent.Where(mi => mi.BCC.Length > 0).Count()));
-            result.Add(sb.ToString());
-            sb.Clear();
+            result.Add(GenerateRecipientsReportLine("Internal Recipients", "(anyone @bmo.com)", allInternalEmailsSent));
 
             var allExternalEmailsSent = allEmailsSent.Where(mi => !mi.Recipients.Any(r => r.Item2.Contains("@bmo.com"))).ToList();
-            sb.Append(string.Format("{0}\t", "External Recipients"));
-            sb.Append(string.Format("{0}\t", "(anyone not @bmo.com)"));
-            sb.Append(string.Format("{0}\t", allExternalEmailsSent.Count));
-            sb.Append(string.Format("{0}\t", allExternalEmailsSent.Where(mi => mi.To.Length > 0).Count()));
-            sb.Append(string.Format("{0}\t", allExternalEmailsSent.Where(mi => mi.CC.Length > 0).Count()));
-            sb.Append(string.Format("{0}\t", allExternalEmailsSent.Where(mi => mi.BCC.Length > 0).Count()));
-            result.Add(sb.ToString());
-            sb.Clear();
+            result.Add(GenerateRecipientsReportLine("External Recipients", "(anyone not @bmo.com)", allExternalEmailsSent));
 
             result.Add(string.Empty);
 
@@ -94,6 +73,20 @@ namespace GenerateEmailAudit
             }
 
             return result;
+        }
+
+        private string GenerateRecipientsReportLine(string name, string email, List<MailItem> mailItems)
+        {
+            var sb = new StringBuilder();
+
+            sb.Append(string.Format("{0}\t", name));
+            sb.Append(string.Format("{0}\t", email));
+            sb.Append(string.Format("{0}\t", mailItems.Count));
+            sb.Append(string.Format("{0}\t", mailItems.Where(mi => mi.To.Length > 0).Count()));
+            sb.Append(string.Format("{0}\t", mailItems.Where(mi => mi.CC.Length > 0).Count()));
+            sb.Append(string.Format("{0}\t", mailItems.Where(mi => mi.BCC.Length > 0).Count()));
+
+            return sb.ToString();
         }
 
         private string GenerateRecipientReportLine(string name, string email, List<MailItem> mailItems)
