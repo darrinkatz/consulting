@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace GenerateEmailAudit
@@ -48,16 +49,16 @@ namespace GenerateEmailAudit
                     CC = columns[5].Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select<string, string>(bcc => bcc.Trim()).ToArray(),
                     ConversationIndex = columns[6],
                     ConversationTopic = columns[7],
-                    CreationTime = DateTime.Parse(columns[8]),
-                    LastModificationTime = DateTime.Parse(columns[9]),
+                    CreationTime = ParseDateTime(columns[8]),
+                    LastModificationTime = ParseDateTime(columns[9]),
                     ReceivedByName = columns[10],
-                    ReceivedTime = DateTime.Parse(columns[11]),
+                    ReceivedTime = ParseDateTime(columns[11]),
                     Recipients = new List<Tuple<string, string>>(
                         columns[12].Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select(t => new Tuple<string, string>(t.Split('|')[0], t.Split('|')[1]))
                         ),
                     SenderEmailAddress = columns[13],
                     SenderName = columns[14],
-                    SentOn = DateTime.Parse(columns[15]),
+                    SentOn = ParseDateTime(columns[15]),
                     Subject = columns[16],
                     To = columns[17].Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select<string, string>(bcc => bcc.Trim()).ToArray(),
                     Unread = bool.Parse(columns[18]),
@@ -71,6 +72,36 @@ namespace GenerateEmailAudit
             }
 
             return result;
+        }
+
+        private static DateTime ParseDateTime(string input)
+        {
+            string[] formats =
+            {
+                "M/d/yyyy h:mm:ss tt",
+                "M/d/yyyy h:mm tt",
+                "MM/dd/yyyy hh:mm:ss",
+                "M/d/yyyy h:mm:ss",
+                "M/d/yyyy hh:mm tt",
+                "M/d/yyyy hh tt",
+                "M/d/yyyy h:mm",
+                "M/d/yyyy h:mm",
+                "MM/dd/yyyy hh:mm",
+                "M/dd/yyyy hh:mm",
+
+                "d/M/yyyy h:mm:ss tt",
+                "d/M/yyyy h:mm tt",
+                "dd/MM/yyyy hh:mm:ss",
+                "d/M/yyyy h:mm:ss",
+                "d/M/yyyy hh:mm tt",
+                "d/M/yyyy hh tt",
+                "d/M/yyyy h:mm",
+                "d/M/yyyy h:mm",
+                "dd/MM/yyyy hh:mm",
+                "dd/M/yyyy hh:mm"
+            };
+
+            return DateTime.ParseExact(input, formats, CultureInfo.InvariantCulture, DateTimeStyles.None);
         }
     }
 }
