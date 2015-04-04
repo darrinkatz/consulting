@@ -14,7 +14,7 @@ Sub GenerateReportData()
     
     currentUserAddressEntry = Application.GetNamespace("MAPI").Session.CurrentUser.AddressEntry
     
-    fileName = "C:\" & Replace(currentUserAddressEntry, " ", "_") & "_email_audit_raw_data_" & Year(Now) & "-" & Month(Now) & "-" & Day(Now) & "-" & Hour(Now) & "-" & Minute(Now) & ".csv"
+    fileName = "C:\ProgramData\Inbox_Analysis_Tool\" & Replace(currentUserAddressEntry, " ", "_") & "_email_audit_raw_data_" & Year(Now) & "-" & Month(Now) & "-" & Day(Now) & "-" & Hour(Now) & "-" & Minute(Now) & ".csv"
     reportRecipient1 = "someone@somewhere.com"
     reportRecipient2 = "someone@somewhere.com"
     startDate = #10/31/2014#
