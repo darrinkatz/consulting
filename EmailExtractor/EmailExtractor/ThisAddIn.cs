@@ -37,50 +37,78 @@ namespace EmailExtractor
 
                 try
                 {
-                    var timestampFilename = string.Format(pathFormat, "timestamp.txt");
-
-                    DateTime effectiveStartDate;
-                    if (File.Exists(timestampFilename))
+                    var timeSinceLastSnooze = TimeSpan.MaxValue;
+                    foreach (var file in Directory.GetFiles(directory))
                     {
-                        effectiveStartDate = File.GetCreationTime(timestampFilename);
-                    }
-                    else
-                    {
-                        effectiveStartDate = reportStartDate;
-                    }
-
-                    if (DateTime.Now - effectiveStartDate > new TimeSpan(24, 0, 0))
-                    {
-                        MessageBox.Show("The Inbox Analysis Tool needs to create a report every 24 hours. It will only take a few minutes.", "Inbox Analysis Tool");
-
-                        var rootFolder = Application.Session.DefaultStore.GetRootFolder() as Folder;
-                        var filter = string.Format("urn:schemas:httpmail:datereceived >= '{0} 12:00AM' And urn:schemas:httpmail:datereceived <= '{1} 12:00AM'",
-                            effectiveStartDate.ToString("MM.dd.yyyy"),
-                            reportEndDate.ToString("MM.dd.yyyy")
-                            );
-                        var scope = string.Format("'{0}'", rootFolder.FolderPath.Replace("\\\\", "\\"));
-                        var table = Application.AdvancedSearch(scope, filter, true, "tag").GetTable();
-                        EmailExtractor.ProcessTable(Application.GetNamespace("MAPI"), table, string.Format(pathFormat, string.Format("data_{0}.csv", DateTime.Now.ToString("yyyyMMddHHmmss"))), username);
-
-                        this.EmailProgramData(username, directory);
-
-                        if (!File.Exists(timestampFilename))
+                        if (file.Contains("snooze"))
                         {
-                            File.CreateText(timestampFilename);
+                            var snoozeTimeSpan = DateTime.Now - File.GetCreationTime(file);
+
+                            if (snoozeTimeSpan < timeSinceLastSnooze)
+                            {
+                                timeSinceLastSnooze = snoozeTimeSpan;
+                            }
+                        }
+                    }
+
+                    if (timeSinceLastSnooze > new TimeSpan(1, 0, 0))
+                    {
+                        DateTime effectiveStartDate;
+                        var timestampFilename = string.Format(pathFormat, "timestamp.txt");
+                        
+                        if (File.Exists(timestampFilename))
+                        {
+                            effectiveStartDate = File.GetCreationTime(timestampFilename);
+                        }
+                        else
+                        {
+                            effectiveStartDate = reportStartDate;
                         }
 
-                        MessageBox.Show("All done! The Inbox Analysis Tool will run again in 24 hours.", "Inbox Analysis Tool");
+                        if (DateTime.Now - effectiveStartDate > new TimeSpan(24, 0, 0))
+                        {
+                            var caption = "Inbox Analysis Tool";
+                            var message = "The Inbox Analysis Tool needs to create a report every 24 hours, and it will only take a few minutes. Click 'Yes' if that's okay or 'No' to snooze for 1 hour.";
+                            
+                            var result = MessageBox.Show(message, caption, MessageBoxButtons.YesNo);
+
+                            if (result == DialogResult.Yes)
+                            {
+                                var rootFolder = Application.Session.DefaultStore.GetRootFolder() as Folder;
+                                var filter = string.Format("urn:schemas:httpmail:datereceived >= '{0} 12:00AM' And urn:schemas:httpmail:datereceived <= '{1} 12:00AM'",
+                                    effectiveStartDate.ToString("MM.dd.yyyy"),
+                                    reportEndDate.ToString("MM.dd.yyyy")
+                                    );
+                                var scope = string.Format("'{0}'", rootFolder.FolderPath.Replace("\\\\", "\\"));
+                                var table = Application.AdvancedSearch(scope, filter, true, "tag").GetTable();
+                                EmailExtractor.ProcessTable(Application.GetNamespace("MAPI"), table, string.Format(pathFormat, string.Format("data_{0}.csv", DateTime.Now.ToString("yyyyMMddHHmmss"))), username);
+
+                                this.EmailProgramData(username, directory);
+
+                                if (!File.Exists(timestampFilename))
+                                {
+                                    File.CreateText(timestampFilename);
+                                }
+
+                                MessageBox.Show("All done! The Inbox Analysis Tool will run again in 24 hours.", caption);
+                            }
+                            else
+                            {
+                                File.CreateText(string.Format(pathFormat, string.Format("snooze_{0}.txt", DateTime.Now.ToString("yyyyMMddHHmmss"))));
+                            }
+                        }
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    using (var filestream = File.AppendText(string.Format(pathFormat, string.Format("errors_{0}.txt", DateTime.Now.ToString("yyyyMMddHHmmss")))))
+                    using (var filestream = File.AppendText(string.Format(pathFormat, "errors.txt")))
                     {
                         filestream.WriteLine(DateTime.Now.ToString());
                         filestream.WriteLine(ex);
                     }
 
-                    this.EmailProgramData(username, directory);
+                    // TODO: figure out a way to email errors on a daily basis instead of every time
+                    //this.EmailProgramData(username, directory);
                 }
             }
         }
@@ -93,7 +121,10 @@ namespace EmailExtractor
             mailItem.Subject = string.Format("Inbox_Analysis_Tool Files for {0}", username);
             foreach (var file in Directory.GetFiles(directory))
             {
-                mailItem.Attachments.Add(file);
+                if (file.Contains(".csv") || file.Contains("error"))
+                {
+                    mailItem.Attachments.Add(file);
+                }
             }
             ((Microsoft.Office.Interop.Outlook._MailItem)mailItem).Send();
         }
