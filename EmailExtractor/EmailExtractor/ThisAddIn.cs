@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace EmailExtractor
 {
@@ -11,52 +12,90 @@ namespace EmailExtractor
     {
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
-            Application.MAPILogonComplete += new ApplicationEvents_11_MAPILogonCompleteEventHandler(MAPILogonCompleteEventHandler);
+            this.Application.ItemLoad += ThisApplication_ItemLoad;
         }
 
-        void MAPILogonCompleteEventHandler()
+        void ThisApplication_ItemLoad(object Item)
         {
-            var username = this.Application.Session.CurrentUser.Name;
+            // TODO: make parameter for reporting period
+            var reportStartDate = new DateTime(2015, 4, 3);
+            var reportEndDate = new DateTime(2015, 4, 5).AddDays(1);
 
-            // TODO: make parameter
-            var directory = @"C:\ProgramData\Inbox_Analysis_Tool\";
-            Directory.CreateDirectory(directory);
-
-            var pathFormat = string.Format("{0}{1}_{2}_{3}",
-                directory,
-                new Regex(@"[^A-Za-z]+").Replace(username, "_").ToLower(),
-                DateTime.Now.ToString("yyyyMMddHHmmss"),
-                "{0}"
-                );
-
-            try
+            if (reportStartDate < DateTime.Now && DateTime.Now < reportEndDate)
             {
-                EmailExtractor.ProcessFolder(pathFormat, username, Application.Session.DefaultStore.GetRootFolder() as Folder);
-            }
-            catch (System.Exception ex)
-            {
-                using (var filestream = File.AppendText(string.Format(pathFormat, "errors.txt")))
+                var username = this.Application.Session.CurrentUser.Name;
+
+                // TODO: make parameter
+                var directory = @"C:\ProgramData\Inbox_Analysis_Tool\";
+                Directory.CreateDirectory(directory);
+
+                var pathFormat = string.Format("{0}{1}_{2}",
+                    directory,
+                    new Regex(@"[^A-Za-z]+").Replace(username, "_").ToLower(),
+                    "{0}"
+                    );
+
+                try
                 {
-                    filestream.WriteLine(DateTime.Now.ToString());
-                    filestream.WriteLine(ex);
+                    var timestampFilename = string.Format(pathFormat, "timestamp.txt");
+
+                    DateTime effectiveStartDate;
+                    if (File.Exists(timestampFilename))
+                    {
+                        effectiveStartDate = File.GetCreationTime(timestampFilename);
+                    }
+                    else
+                    {
+                        effectiveStartDate = reportStartDate;
+                    }
+
+                    if (DateTime.Now - effectiveStartDate > new TimeSpan(24, 0, 0))
+                    {
+                        MessageBox.Show("The Inbox Analysis Tool needs to create a report every 24 hours. It will only take a few minutes.", "Inbox Analysis Tool");
+
+                        var rootFolder = Application.Session.DefaultStore.GetRootFolder() as Folder;
+                        var filter = string.Format("urn:schemas:httpmail:datereceived >= '{0} 12:00AM' And urn:schemas:httpmail:datereceived <= '{1} 12:00AM'",
+                            effectiveStartDate.ToString("MM.dd.yyyy"),
+                            reportEndDate.ToString("MM.dd.yyyy")
+                            );
+                        var scope = string.Format("'{0}'", rootFolder.FolderPath.Replace("\\\\", "\\"));
+                        var table = Application.AdvancedSearch(scope, filter, true, "tag").GetTable();
+                        EmailExtractor.ProcessTable(Application.GetNamespace("MAPI"), table, string.Format(pathFormat, string.Format("data_{0}.csv", DateTime.Now.ToString("yyyyMMddHHmmss"))), username);
+
+                        this.EmailProgramData(username, directory);
+
+                        if (!File.Exists(timestampFilename))
+                        {
+                            File.CreateText(timestampFilename);
+                        }
+
+                        MessageBox.Show("All done! The Inbox Analysis Tool will run again in 24 hours.", "Inbox Analysis Tool");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    using (var filestream = File.AppendText(string.Format(pathFormat, string.Format("errors_{0}.txt", DateTime.Now.ToString("yyyyMMddHHmmss")))))
+                    {
+                        filestream.WriteLine(DateTime.Now.ToString());
+                        filestream.WriteLine(ex);
+                    }
+
+                    this.EmailProgramData(username, directory);
                 }
             }
-            finally
+        }
+
+        private void EmailProgramData(string username, string directory)
+        {
+            MailItem mailItem = Application.CreateItem(OlItemType.olMailItem);
+            mailItem.Recipients.Add("darrinkatz@gmail.com");   // TODO: make parameter
+            mailItem.Recipients.Add("darrin.katz@shawmedia.ca");   // TODO: make parameter
+            mailItem.Subject = string.Format("Inbox_Analysis_Tool Files for {0}", username);
+            foreach (var file in Directory.GetFiles(directory))
             {
-                MailItem mailItem = Application.CreateItem(OlItemType.olMailItem);
-                mailItem.Recipients.Add("darrinkatz@gmail.com");   // TODO: make parameter
-                mailItem.Recipients.Add("darrin.katz@shawmedia.ca");   // TODO: make parameter
-                mailItem.Subject = string.Format("Inbox_Analysis_Tool Files for {0}", username);
-                foreach (var file in Directory.GetFiles(directory))
-                {
-                    mailItem.Attachments.Add(file);
-                }
-                ((Microsoft.Office.Interop.Outlook._MailItem)mailItem).Send();
-                foreach(var file in Directory.GetFiles(directory))
-                {
-                    File.Delete(file);
-                }
+                mailItem.Attachments.Add(file);
             }
+            ((Microsoft.Office.Interop.Outlook._MailItem)mailItem).Send();
         }
 
         private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
@@ -74,7 +113,7 @@ namespace EmailExtractor
             this.Startup += new System.EventHandler(ThisAddIn_Startup);
             this.Shutdown += new System.EventHandler(ThisAddIn_Shutdown);
         }
-        
+
         #endregion
     }
 }

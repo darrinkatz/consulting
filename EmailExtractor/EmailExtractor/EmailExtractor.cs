@@ -14,21 +14,20 @@ namespace EmailExtractor
     {
         private static string _delimiter = "\t";
 
-        public static void ProcessFolder(string pathFormat, string username, Folder folder)
+        public static void ProcessTable(NameSpace nameSpace, Table table, string filePath, string username)
         {
             MailItem mailItem;
 
-            for (int i = 1; i < folder.Items.Count; i++)
+            while (!table.EndOfTable)
             {
-                mailItem = folder.Items[i] as MailItem;
+                var nextRow = table.GetNextRow();
+                var item = nameSpace.GetItemFromID(nextRow["EntryID"]);
+
+                mailItem = item as MailItem;
 
                 if (mailItem != null)
                 {
-                    //TODO: make date range parameters 
-                    if (mailItem.CreationTime > new DateTime(2015, 04, 01) && mailItem.CreationTime < new DateTime(2015, 04, 06))
-                    {
-                        WriteEmailToFile(pathFormat, username, folder, mailItem);
-                    }
+                    WriteEmailToFile(filePath, username, mailItem.Parent as Folder, mailItem);
 
                     Marshal.ReleaseComObject(mailItem);
                 }
@@ -36,18 +35,9 @@ namespace EmailExtractor
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }
-
-            Folder childFolder;
-
-            for (int i = 1; i < folder.Folders.Count; i++)
-            {
-                childFolder = (Folder)folder.Folders[i];
-
-                //ProcessFolder(pathFormat, username, childFolder);
-            }
         }
 
-        private static void WriteEmailToFile(string pathFormat, string username, Folder folder, MailItem mailItem)
+        private static void WriteEmailToFile(string filePath, string username, Folder folder, MailItem mailItem)
         {
             var sb = new StringBuilder();
 
@@ -121,7 +111,7 @@ namespace EmailExtractor
             sb.Append(mailItem.UnRead);
             sb.Append(_delimiter);
 
-            using (var outfile = File.AppendText(string.Format(pathFormat, "data.csv")))
+            using (var outfile = File.AppendText(filePath))
             {
                 outfile.WriteLine(sb.ToString());
             }
