@@ -1,8 +1,6 @@
 ﻿using Microsoft.Office.Interop.Outlook;
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
