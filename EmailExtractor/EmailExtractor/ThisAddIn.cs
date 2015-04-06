@@ -18,8 +18,8 @@ namespace EmailExtractor
         void ThisApplication_ItemLoad(object Item)
         {
             // TODO: make parameter for reporting period
-            var reportStartDate = new DateTime(2015, 4, 3);
-            var reportEndDate = new DateTime(2015, 4, 5).AddDays(1);
+            var reportStartDate = new DateTime(2015, 4, 5);
+            var reportEndDate = new DateTime(2015, 4, 17).AddDays(1);
 
             if (reportStartDate < DateTime.Now && DateTime.Now < reportEndDate)
             {
